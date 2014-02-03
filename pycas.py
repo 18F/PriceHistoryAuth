@@ -76,7 +76,7 @@
 #
 #  Secret used to produce hash.   This can be any string.  Hackers
 #  who know this string can forge this script's authentication cookie.
-SECRET = "7e16162998eb7efafb1498f75190a937"
+import requests
 
 #  Name field for pycas cookie
 PYCAS_NAME = "pycas"
@@ -156,10 +156,10 @@ def split2(str,sep):
 	return parts[0], parts[1]
 
 #  Use hash and secret to encrypt string.
-def makehash(str,secret=SECRET):
+def makehash(str):
 	m = md5.new()
 	m.update(str)
-	m.update(SECRET)
+	m.update(secret)
 	return m.hexdigest()[0:8]
 	
 	
@@ -211,7 +211,7 @@ def get_cookie_as_string(cas_host, service_url, opt, secure):
 #  Retrieve id from pycas cookie and test data for validity 
 # (to prevent mailicious users from falsely authenticating).
 #  Return status and id (id will be empty string if unknown).
-def decode_cookie(cookie_vals,lifetime=None):
+def decode_cookie(cookie_vals,cas_secret,lifetime=None):
 
 	#  Test for now cookies
 	if cookie_vals==None:
@@ -234,8 +234,8 @@ def decode_cookie(cookie_vals,lifetime=None):
 			oldhash     = cookie_val[0:8]
 			timestr, id = split2(cookie_val[8:],":")
 			#  Verify hash
-			newhash=makehash(timestr + ":" + id)
-			if oldhash==makehash(timestr + ":" + id):
+			newhash=makehash(timestr + ":" + id,cas_secret)
+			if oldhash==makehash(timestr + ":" + id,cas_secret):
 				#  Check lifetime
 				if lifetime:
 					if str(int(time.time()+int(lifetime)))<timestr:
@@ -306,7 +306,7 @@ def validate_cas_2(cas_host, service_url, ticket, opt):
 
 #  Validate ticket using cas 2.0 protocol
 #    The 2.0 protocol allows the use of the mutually exclusive "renew" and "gateway" options.
-def validate_cas_2x(cas_host, service_url, ticket, opt):
+def validate_cas_2x_urllib(cas_host, cas_proxy, service_url, ticket, opt):
 
 	#  Second Call to CAS server: Ticket found, verify it.
 	cas_validate = cas_host + "/cas/serviceValidate?ticket=" + ticket + "&service=" + service_url
@@ -317,6 +317,33 @@ def validate_cas_2x(cas_host, service_url, ticket, opt):
 	#  Get first line - should be yes or no
 	response = f_validate.read()
         writelog("response = "+response)
+	id = parse_tag(response,"cas:user")
+	#  Ticket does not validate, return error
+	if id=="":
+		return TICKET_INVALID, "", "", ""
+	#  Ticket validates
+	else:
+                writelog("validate response = "+response)
+                pivcard = parse_tag(response,"maxAttribute:samlAuthenticationStatementAuthMethod")
+                
+                agencyThatRequired = parse_tag(response,"maxAttribute:EAuth-LOA")
+                writelog("pivcard = "+pivcard)
+                writelog("agencyThatRequired = "+agencyThatRequired)
+		return TICKET_OK, id, pivcard, agencyThatRequired
+
+def validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt):
+
+	#  Second Call to CAS server: Ticket found, verify it.
+	cas_validate = cas_host + "/cas/serviceValidate?ticket=" + ticket + "&service=" + service_url
+	if opt:
+		cas_validate += "&%s=true" % opt
+        writelog("cas_validate = "+cas_validate)
+#   f_validate   = urllib.urlopen(cas_validate)
+	#  Get first line - should be yes or no
+#	response = f_validate.read()
+ #       writelog("response = "+response)
+ 	r = requests.get(cas_validate,cas_proxy)
+ 	response = r.text
 	id = parse_tag(response,"cas:user")
 	#  Ticket does not validate, return error
 	if id=="":
@@ -350,9 +377,9 @@ def get_cookies():
 
 
 #  Check pycas cookie
-def get_cookie_status():
+def get_cookie_status(cas_secret):
 	cookies = get_cookies()
-	return decode_cookie(cookies.get(PYCAS_NAME))
+	return deocode_cookie(cookies.get(PYCAS_NAME),cas_secret)
 
 
 def get_ticket_status(cas_host,service_url,protocol,opt):
@@ -377,11 +404,11 @@ def get_ticket_status_from_ticket(ticket,cas_host,service_url,protocol,opt):
         else:
                 return ticket_status, ""
 
-def get_ticket_status_from_ticket_piv_required(assurancelevel_p,ticket,cas_host,service_url,protocol,opt):
+def get_ticket_status_from_ticket_piv_required(assurancelevel_p,ticket,cas_host,cas_proxy,service_url,protocol,opt):
         if protocol==1:
                 ticket_status, id = validate_cas_1(cas_host, service_url, ticket, opt)
         else:
-                ticket_status, id,piv,pivx = validate_cas_2x(cas_host, service_url, ticket, opt)
+                ticket_status, id,piv,pivx = validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt)
 
         writelog("ticket status"+repr(ticket_status))
         writelog("piv status"+repr(piv))
@@ -411,7 +438,7 @@ def get_ticket_status_from_ticket_piv_required(assurancelevel_p,ticket,cas_host,
 #-----------------------------------------------------------------------
 
 # This function should be merged with the above function "login"
-def check_authenticated_p(assurance_level_p,ticket,cas_host, service_url, lifetime=None, secure=1, protocol=2, path="/", opt=""):
+def check_authenticated_p(assurance_level_p,ticket,cas_host,cas_proxy,cas_secret,service_url, lifetime=None, secure=1, protocol=2, path="/", opt=""):
 
         writelog("login begun")
 	#  Check cookie for previous pycas state, with is either
@@ -420,7 +447,7 @@ def check_authenticated_p(assurance_level_p,ticket,cas_host, service_url, lifeti
 	#  Other cookie status are 
 	#     COOKIE_NONE    - no cookie found.
 	#     COOKIE_INVALID - invalid cookie found.
-	cookie_status, id = get_cookie_status()
+	cookie_status, id = get_cookie_status(cas_secret)
 
         writelog("got cookie status")
 
@@ -440,11 +467,11 @@ def check_authenticated_p(assurance_level_p,ticket,cas_host, service_url, lifeti
 
         writelog("getting cookie status")
 
-	ticket_status, id = get_ticket_status_from_ticket_piv_required(assurance_level_p,ticket,cas_host,service_url,protocol,opt)
+	ticket_status, id = get_ticket_status_from_ticket_piv_required(assurance_level_p,ticket,cas_host,cas_proxy,service_url,protocol,opt)
 
 	if ticket_status==TICKET_OK:
 		timestr     = str(int(time.time()))
-		hash        = makehash(timestr + ":" + id)
+		hash        = makehash(timestr + ":" + id,cas_secret)
 		cookie_val  = hash + timestr + ":" + id
 		domain      = urlparse.urlparse(service_url)[1]
 		return CAS_OK, id, make_pycas_cookie(cookie_val, domain, path, secure)
