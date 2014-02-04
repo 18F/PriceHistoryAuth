@@ -156,7 +156,7 @@ def split2(str,sep):
 	return parts[0], parts[1]
 
 #  Use hash and secret to encrypt string.
-def makehash(str):
+def makehash(str,secert):
 	m = md5.new()
 	m.update(str)
 	m.update(secret)
@@ -342,7 +342,7 @@ def validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt):
 	#  Get first line - should be yes or no
 #	response = f_validate.read()
  #       writelog("response = "+response)
- 	r = requests.get(cas_validate,cas_proxy)
+ 	r = requests.get(cas_validate,proxies=cas_proxy)
  	response = r.text
 	id = parse_tag(response,"cas:user")
 	#  Ticket does not validate, return error
@@ -379,7 +379,7 @@ def get_cookies():
 #  Check pycas cookie
 def get_cookie_status(cas_secret):
 	cookies = get_cookies()
-	return deocode_cookie(cookies.get(PYCAS_NAME),cas_secret)
+	return decode_cookie(cookies.get(PYCAS_NAME),cas_secret)
 
 
 def get_ticket_status(cas_host,service_url,protocol,opt):
