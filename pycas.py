@@ -1,16 +1,3 @@
-# WARNING!! THIS IS A CORRUPTED VERSION OF PYCAS!
-# This is not the originial version of pycas.py --- it is a copy of 
-# there work modified to be used by PPBottleApp.py (NOT CGI).
-
-
-#!/usr/bin/python
-
-#  Debug
-## import os
-## print "Content-type: text/html\n"
-## import sys
-## sys.stderr = sys.stdout
-
 #  Copyright 2011 Jon Rifkin
 # 
 #  Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,11 +12,31 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 
+# WARNING!! THIS IS A DERIVED VERSION OF PYCAS!
+# This is not the originial version of pycas.py --- it is a copy of 
+# there work modified to be used by PPBottleApp.py (NOT CGI).
+# That work was done by Robert L. Read, and is not finished.  
+# However, as a dervied work, I believe it remains subject to the 
+# Apache 2.0 license under which I received it from 
+# https://wiki.jasig.org/display/CASC/Pycas  --- Robert L. Read, 2014
+
+
+#!/usr/bin/python
+
+#  Debug
+## import os
+## print "Content-type: text/html\n"
+## import sys
+## sys.stderr = sys.stdout
+
+
+
 
 
 
 #-----------------------------------------------------------------------
-#  Usage
+#  Usage  --- THIS IS NO LNGER CORRECT, THIS VERSIION DOES NOT SUPPORT 
+#  CGI.
 #-----------------------------------------------------------------------
 #
 #  Purpose
