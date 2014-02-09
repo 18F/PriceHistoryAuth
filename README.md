@@ -1,7 +1,7 @@
 P3Auth
 ======
 
-Simple Authentication module used by PricesPaidGUI and PricesPaidAPI
+Simple Authentication module used by PricesPaidGUI and PricesPaidAPI.  This project has almost no stand-alone value apart from the P3 project.  However, it has modified the file pycas.py by Jon Rifkin that may be valuable to someone doing CAS authentication that is NOT using CGI as the original file did.
 
 This is part of the PricesPaid (P3) Project
 --------------------------------------
@@ -16,3 +16,10 @@ The PricesPaid (P3) project is market research tool to allow search of purchase 
 To learn how to install the system, please refer to the documentation in the PricesPaidGUI project.
 
 The name "PricesPaid" is descriptive: this project shows you prices that have been paid for things.  However, the name is applied to many projects, so "P3" is the specific name of this project.
+
+# Licensing: derived work of Pycas.py
+
+The pycas.py is copyright Jon Rifkin 2011.  I have made a modified version (a derived work) that is not based on CGI but more appropriately callable by WSGI.  This file is released under the Apache 2.0 license.
+
+
+
