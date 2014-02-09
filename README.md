@@ -1,7 +1,10 @@
 P3Auth
 ======
 
-Simple Authentication module used by PricesPaidGUI and PricesPaidAPI.  This project has almost no stand-alone value apart from the P3 project.  However, it has modified the file pycas.py by Jon Rifkin that may be valuable to someone doing CAS authentication that is NOT using CGI as the original file did.
+Simple Authentication module used by PricesPaidGUI and PricesPaidAPI.  This project has almost no stand-alone value apart from the P3 project.  
+
+It is, however, a derived [CAS](https://wiki.jasig.org/display/CAS/Home) (Central Authentication Service) client.  As such, it might be interesting to anyone who wants a Python CAS client.
+It is basecd on the file [pycas.py](https://wiki.jasig.org/display/CASC/Pycas) by Jon Rifkin that may be valuable to someone doing CAS authentication that is NOT using CGI as the original file did.
 
 This is part of the PricesPaid (P3) Project
 --------------------------------------
