@@ -20,6 +20,10 @@
 # Apache 2.0 license under which I received it from 
 # https://wiki.jasig.org/display/CASC/Pycas  --- Robert L. Read, 2014
 
+# Note: This differes from the original pycas.py mainly by being more
+# "purely functional" in organization, as befits a file used from WSGI
+# and not CGI.
+
 
 #!/usr/bin/python
 
@@ -319,23 +323,19 @@ def validate_cas_2x_urllib(cas_host, cas_proxy, service_url, ticket, opt):
 	cas_validate = cas_host + "/cas/serviceValidate?ticket=" + ticket + "&service=" + service_url
 	if opt:
 		cas_validate += "&%s=true" % opt
-        writelog("cas_validate = "+cas_validate)
+
 	f_validate   = urllib.urlopen(cas_validate)
 	#  Get first line - should be yes or no
 	response = f_validate.read()
-        writelog("response = "+response)
+
 	id = parse_tag(response,"cas:user")
 	#  Ticket does not validate, return error
 	if id=="":
 		return TICKET_INVALID, "", "", ""
 	#  Ticket validates
 	else:
-                writelog("validate response = "+response)
                 pivcard = parse_tag(response,"maxAttribute:samlAuthenticationStatementAuthMethod")
-                
                 agencyThatRequired = parse_tag(response,"maxAttribute:EAuth-LOA")
-                writelog("pivcard = "+pivcard)
-                writelog("agencyThatRequired = "+agencyThatRequired)
 		return TICKET_OK, id, pivcard, agencyThatRequired
 
 def validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt):
@@ -344,7 +344,7 @@ def validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt):
 	cas_validate = cas_host + "/cas/serviceValidate?ticket=" + ticket + "&service=" + service_url
 	if opt:
 		cas_validate += "&%s=true" % opt
-        writelog("cas_validate = "+cas_validate)
+#        writelog("cas_validate = "+cas_validate)
 #   f_validate   = urllib.urlopen(cas_validate)
 	#  Get first line - should be yes or no
 #	response = f_validate.read()
@@ -357,12 +357,12 @@ def validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt):
 		return TICKET_INVALID, "", "", ""
 	#  Ticket validates
 	else:
-                writelog("validate response = "+response)
+#                writelog("validate response = "+response)
                 pivcard = parse_tag(response,"maxAttribute:samlAuthenticationStatementAuthMethod")
                 
                 agencyThatRequired = parse_tag(response,"maxAttribute:EAuth-LOA")
-                writelog("pivcard = "+pivcard)
-                writelog("agencyThatRequired = "+agencyThatRequired)
+#                writelog("pivcard = "+pivcard)
+#                writelog("agencyThatRequired = "+agencyThatRequired)
 		return TICKET_OK, id, pivcard, agencyThatRequired
 
 
@@ -403,7 +403,7 @@ def get_ticket_status_from_ticket(ticket,cas_host,service_url,protocol,opt):
         else:
                 ticket_status, id = validate_cas_2(cas_host, service_url, ticket, opt)
 
-        writelog("ticket status"+repr(ticket_status))
+#        writelog("ticket status"+repr(ticket_status))
         #  Make cookie and return id
         if ticket_status==TICKET_OK:
                 return TICKET_OK, id
@@ -417,11 +417,11 @@ def get_ticket_status_from_ticket_piv_required(assurancelevel_p,ticket,cas_host,
         else:
                 ticket_status, id,piv,pivx = validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt)
 
-        writelog("ticket status"+repr(ticket_status))
-        writelog("piv status"+repr(piv))
-        writelog("pivx status"+repr(pivx))
-        writelog("assurance_level boolean"+repr(assurancelevel_p))
-        writelog("assurance_level boolean"+repr(assurancelevel_p(pivx,piv)))
+#        writelog("ticket status"+repr(ticket_status))
+#        writelog("piv status"+repr(piv))
+#        writelog("pivx status"+repr(pivx))
+#        writelog("assurance_level boolean"+repr(assurancelevel_p))
+#        writelog("assurance_level boolean"+repr(assurancelevel_p(pivx,piv)))
         #  Make cookie and return id
         # MAX is actually returning a value here (in pivx), I think I need
         # to search for "assurancelevel3", because it is sending 
@@ -445,9 +445,20 @@ def get_ticket_status_from_ticket_piv_required(assurancelevel_p,ticket,cas_host,
 #-----------------------------------------------------------------------
 
 # This function should be merged with the above function "login"
+
+# Note:  assurcane_level_p is a a function applied to return results.
+# I takes to arguments and should look something like this:
+# CAS_LEVEL_OF_ASSURANCE_PREDICATE_LOA2_AND_PIV = lambda loa,piv: {
+#   (("http://idmanagement.gov/icam/2009/12/saml_2.0_profile/assurancelevel2" == loa)
+#    or
+#  ("http://idmanagement.gov/icam/2009/12/saml_2.0_profile/assurancelevel3" == loa))
+#  and
+#   ("urn:max:fips-201-pivcard" == piv)
+#
+# }
 def check_authenticated_p(assurance_level_p,ticket,cas_host,cas_proxy,cas_secret,service_url, lifetime=None, secure=1, protocol=2, path="/", opt=""):
 
-        writelog("login begun")
+ #       writelog("login begun")
 	#  Check cookie for previous pycas state, with is either
 	#     COOKIE_AUTH    - client already authenticated by pycas.
 	#     COOKIE_GATEWAY - client returning from CAS_SERVER with gateway option set.
@@ -456,7 +467,7 @@ def check_authenticated_p(assurance_level_p,ticket,cas_host,cas_proxy,cas_secret
 	#     COOKIE_INVALID - invalid cookie found.
 	cookie_status, id = get_cookie_status(cas_secret)
 
-        writelog("got cookie status")
+ #       writelog("got cookie status")
 
 	if cookie_status==COOKIE_AUTH:
                 writelog("CAS_OK")
@@ -472,7 +483,7 @@ def check_authenticated_p(assurance_level_p,ticket,cas_host,cas_proxy,cas_secret
 	#  If ticket is ok, then user has authenticated, return id and 
 	#  a pycas cookie for calling program to send to web browser.
 
-        writelog("getting cookie status")
+#        writelog("getting cookie status")
 
 	ticket_status, id = get_ticket_status_from_ticket_piv_required(assurance_level_p,ticket,cas_host,cas_proxy,service_url,protocol,opt)
 
@@ -486,7 +497,6 @@ def check_authenticated_p(assurance_level_p,ticket,cas_host,cas_proxy,cas_secret
 	elif ticket_status==TICKET_INVALID:
 		return CAS_TICKET_INVALID, "", ""
 
-        writelog("middle")
 
 	#  If unathenticated and in gateway mode, return gateway status and clear
 	#  pycas cookie (which was set to gateway by do_redirect()).
