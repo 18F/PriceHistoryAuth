@@ -360,10 +360,10 @@ def validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt):
 #                writelog("validate response = "+response)
                 pivcard = parse_tag(response,"maxAttribute:samlAuthenticationStatementAuthMethod")
                 
-                agencyThatRequired = parse_tag(response,"maxAttribute:EAuth-LOA")
+                eauth_but_not_valid = parse_tag(response,"maxAttribute:EAuth-LOA")
 #                writelog("pivcard = "+pivcard)
 #                writelog("agencyThatRequired = "+agencyThatRequired)
-		return TICKET_OK, id, pivcard, agencyThatRequired
+		return TICKET_OK, id, pivcard, eauth_but_not_valid
 
 
 #  Read cookies from env variable HTTP_COOKIE.
@@ -415,13 +415,11 @@ def get_ticket_status_from_ticket_piv_required(assurancelevel_p,ticket,cas_host,
         if protocol==1:
                 ticket_status, id = validate_cas_1(cas_host, service_url, ticket, opt)
         else:
-                ticket_status, id,piv,pivx = validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt)
+                ticket_status, id,piv,eauth = validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt)
 
 #        writelog("ticket status"+repr(ticket_status))
 #        writelog("piv status"+repr(piv))
 #        writelog("pivx status"+repr(pivx))
-#        writelog("assurance_level boolean"+repr(assurancelevel_p))
-#        writelog("assurance_level boolean"+repr(assurancelevel_p(pivx,piv)))
         #  Make cookie and return id
         # MAX is actually returning a value here (in pivx), I think I need
         # to search for "assurancelevel3", because it is sending 
@@ -430,7 +428,7 @@ def get_ticket_status_from_ticket_piv_required(assurancelevel_p,ticket,cas_host,
 
         # This is supposed to be a simple boolean!  But...
         # it is returning a set containing a boolean!  I know not why.
-        if ticket_status==TICKET_OK and (True in assurancelevel_p(pivx,piv)):
+        if ticket_status==TICKET_OK and (True in assurancelevel_p(eauth,piv)):
                 return TICKET_OK, id
         #  Return error status
         else:
