@@ -1,5 +1,5 @@
 # This file is responsible for checking secure hashes
-# against configured user/password sistuations.
+# against configured user/cred situations.
 import os
 import random,string
 import datetime
@@ -32,7 +32,7 @@ def record_bad_login(username):
         GLOBAL_BAD_LOGIN[username][0] = GLOBAL_BAD_LOGIN[username][0]+1
         GLOBAL_BAD_LOGIN[username][1] = datetime.datetime.now()
 
-def does_authenticate(username,password,p3apisalt):
+def does_authenticate(username,cred,p3apisalt):
     hashes = loadHashes()
     if username in GLOBAL_BAD_LOGIN:
         timenow = datetime.datetime.now()
@@ -53,7 +53,7 @@ def does_authenticate(username,password,p3apisalt):
         LogActivity.logBadCredentials(username)
         record_bad_login(username)
         return False;
-    if hashes[username] == hashlib.sha256(password+p3apisalt).hexdigest():
+    if hashes[username] == hashlib.sha256(cred+p3apisalt).hexdigest():
         return True;
     else:
         LogActivity.logBadCredentials(username)

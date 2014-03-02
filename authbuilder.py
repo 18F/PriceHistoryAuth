@@ -19,8 +19,8 @@ def generatePasswords():
         # Add password
         username = "changeme"+str(i)
         # Warning!  This is temporary!  We really want to
-        # create random passwords instead, but we need to
-        # know the passwords to mail them out to people,
+        # create random creds instead, but we need to
+        # know the creds to mail them out to people,
         # So this is just a test.
 
         length = 25 # change this to something reasonable

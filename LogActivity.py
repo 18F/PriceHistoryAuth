@@ -7,8 +7,8 @@ hdlr.setFormatter(formatter)
 logger.addHandler(hdlr) 
 logger.setLevel(logging.INFO)
 
-# would I'm not loggin the password attempt as it might be 
-# close to a real password, allowing someone to guess it 
+# I'm not logging the auth attempt as it might be 
+# close to a real credential, allowing someone to guess it 
 def logBadCredentials(username):
     logger.info("Bad AuthenticationAttempt : "+username)
 
