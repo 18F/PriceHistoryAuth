@@ -130,6 +130,3 @@ def del_session(session_id):
         LogActivity.logMissingSession(str(session_id)+"failed to remove")
     else:
         LogActivity.logMissingSession(str(session_id)+"removed")
-
-
-    
