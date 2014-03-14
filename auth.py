@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+#-*- coding: utf-8 -*-
+
 # This file is responsible for checking secure hashes
 # against configured user/cred situations.
 import os
@@ -20,7 +23,8 @@ LIMIT_TIME_TO_RETRY = 60*60
 def loadHashes():
     hshs_file = RelativePathToHashesFile
     if os.path.exists(hshs_file):
-        hashes = pickle.load(open(hshs_file, "rb"))
+        with open(hshs_file, "rb") as hs:
+            hashes = pickle.load(hs)
     else:
         hashes = {}
     return hashes
