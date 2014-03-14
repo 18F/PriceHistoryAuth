@@ -141,25 +141,23 @@ import urlparse
 
 #  For debugging.
 def writelog(msg):
-	f = open(LOG_FILE,"a")
-	timestr = time.strftime("%Y-%m-%d %H:%M:%S ");
-	f.write(timestr + msg + "\n");
-	f.close()
+	with open(LOG_FILE,"a") as f: 
+		timestr = time.strftime("%Y-%m-%d %H:%M:%S ");
+		f.write(timestr + msg + "\n");
 
 #  Used for parsing xml.  Search str for first occurance of
 #  <tag>.....</tag> and return text (striped of leading and
 #  trailing whitespace) between tags.  Return "" if tag not
 #  found.
 def parse_tag(s,tag):
-   tag1_pos1 = s.find("<" + tag)
-   #  No tag found, return empty string.
-   if tag1_pos1==-1: return ""
-   tag1_pos2 = s.find(">",tag1_pos1)
-   if tag1_pos2==-1: return ""
-   tag2_pos1 = s.find("</" + tag,tag1_pos2)
-   if tag2_pos1==-1: return ""
-   return s[tag1_pos2+1:tag2_pos1].strip()
-
+	tag1_pos1 = s.find("<" + tag)
+	#  No tag found, return empty string.
+	if tag1_pos1==-1: return ""
+	tag1_pos2 = s.find(">",tag1_pos1)
+	if tag1_pos2==-1: return ""
+	tag2_pos1 = s.find("</" + tag,tag1_pos2)
+	if tag2_pos1==-1: return ""
+	return s[tag1_pos2+1:tag2_pos1].strip()
 
 #  Split string in exactly two pieces, return '' for missing pieces.
 def split2(s,sep):
