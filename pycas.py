@@ -225,7 +225,7 @@ def get_cookie_as_string(cas_host, service_url, opt, secure):
 def decode_cookie(cookie_vals,cas_secret,lifetime=None):
 
 	#  Test for now cookies
-	if cookie_vals==None:
+	if cookie_vals is None:
 		return COOKIE_NONE, ""
 
 	#  Test each cookie value
