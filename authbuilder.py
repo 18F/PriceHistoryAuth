@@ -32,8 +32,10 @@ def generatePasswords():
         hshs[username] = hashlib.sha256(password+P3APISALT).hexdigest()
 
     # Save to disk
-    pickle.dump(hshs, open(hsh_file, "wb"))
-    pickle.dump(pwds, open(pwd_file, "wb"))
+    with open(hsh_file, "wb") as hf:
+        pickle.dump(hshs, hf)
+    with open(pwd_file, "wb") as pf:
+        pickle.dump(pwds, pf)
 
 # invoke the function.
 generatePasswords()

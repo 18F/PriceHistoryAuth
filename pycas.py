@@ -141,35 +141,33 @@ import urlparse
 
 #  For debugging.
 def writelog(msg):
-	f = open(LOG_FILE,"a")
-	timestr = time.strftime("%Y-%m-%d %H:%M:%S ");
-	f.write(timestr + msg + "\n");
-	f.close()
+	with open(LOG_FILE,"a") as f: 
+		timestr = time.strftime("%Y-%m-%d %H:%M:%S ");
+		f.write(timestr + msg + "\n");
 
 #  Used for parsing xml.  Search str for first occurance of
 #  <tag>.....</tag> and return text (striped of leading and
 #  trailing whitespace) between tags.  Return "" if tag not
 #  found.
-def parse_tag(str,tag):
-   tag1_pos1 = str.find("<" + tag)
-   #  No tag found, return empty string.
-   if tag1_pos1==-1: return ""
-   tag1_pos2 = str.find(">",tag1_pos1)
-   if tag1_pos2==-1: return ""
-   tag2_pos1 = str.find("</" + tag,tag1_pos2)
-   if tag2_pos1==-1: return ""
-   return str[tag1_pos2+1:tag2_pos1].strip()
-
+def parse_tag(s,tag):
+	tag1_pos1 = s.find("<" + tag)
+	#  No tag found, return empty string.
+	if tag1_pos1==-1: return ""
+	tag1_pos2 = s.find(">",tag1_pos1)
+	if tag1_pos2==-1: return ""
+	tag2_pos1 = s.find("</" + tag,tag1_pos2)
+	if tag2_pos1==-1: return ""
+	return s[tag1_pos2+1:tag2_pos1].strip()
 
 #  Split string in exactly two pieces, return '' for missing pieces.
-def split2(str,sep):
-	parts = str.split(sep,1) + ["",""]
+def split2(s,sep):
+	parts = s.split(sep,1) + ["",""]
 	return parts[0], parts[1]
 
 #  Use hash and secret to encrypt string.
-def makehash(str,secert):
+def makehash(s,secert):
 	m = md5.new()
-	m.update(str)
+	m.update(s)
 	m.update(secret)
 	return m.hexdigest()[0:8]
 	
@@ -225,7 +223,7 @@ def get_cookie_as_string(cas_host, service_url, opt, secure):
 def decode_cookie(cookie_vals,cas_secret,lifetime=None):
 
 	#  Test for now cookies
-	if cookie_vals==None:
+	if cookie_vals is None:
 		return COOKIE_NONE, ""
 
 	#  Test each cookie value
@@ -243,10 +241,10 @@ def decode_cookie(cookie_vals,cas_secret,lifetime=None):
 		else:
 			# Separate cookie parts
 			oldhash     = cookie_val[0:8]
-			timestr, id = split2(cookie_val[8:],":")
+			timestr, id_ = split2(cookie_val[8:],":")
 			#  Verify hash
-			newhash=makehash(timestr + ":" + id,cas_secret)
-			if oldhash==makehash(timestr + ":" + id,cas_secret):
+			newhash=makehash(timestr + ":" + id_, cas_secret)
+			if oldhash==makehash(timestr + ":" + id_, cas_secret):
 				#  Check lifetime
 				if lifetime:
 					if str(int(time.time()+int(lifetime)))<timestr:
@@ -267,7 +265,7 @@ def decode_cookie(cookie_vals,cas_secret,lifetime=None):
 
 	#  Valid authentication cookie takes precedence
 	if COOKIE_AUTH in cookie_attrs:
-		return COOKIE_AUTH, id
+		return COOKIE_AUTH, id_
 	#  Gateway cookie takes next precedence
 	if COOKIE_GATEWAY in cookie_attrs:
 		return COOKIE_GATEWAY, ""
@@ -289,10 +287,10 @@ def validate_cas_1(cas_host, service_url, ticket):
 	#  Ticket validates
 	else:
 		#  Get id
-		id = f_validate.readline()
+		id_ = f_validate.readline()
 		f_validate.close()
-		id = id.strip()
-		return TICKET_OK, id
+		id_ = id_.strip()
+		return TICKET_OK, id_
 
 
 
@@ -306,13 +304,13 @@ def validate_cas_2(cas_host, service_url, ticket, opt):
 	f_validate   = urllib.urlopen(cas_validate)
 	#  Get first line - should be yes or no
 	response = f_validate.read()
-	id = parse_tag(response,"cas:user")
+	id_ = parse_tag(response,"cas:user")
 	#  Ticket does not validate, return error
-	if id=="":
+	if id_ == "":
 		return TICKET_INVALID, ""
 	#  Ticket validates
 	else:
-		return TICKET_OK, id
+		return TICKET_OK, id_
 
 
 #  Validate ticket using cas 2.0 protocol
@@ -328,15 +326,15 @@ def validate_cas_2x_urllib(cas_host, cas_proxy, service_url, ticket, opt):
 	#  Get first line - should be yes or no
 	response = f_validate.read()
 
-	id = parse_tag(response,"cas:user")
+	id_ = parse_tag(response,"cas:user")
 	#  Ticket does not validate, return error
-	if id=="":
+	if id == "":
 		return TICKET_INVALID, "", "", ""
 	#  Ticket validates
 	else:
                 pivcard = parse_tag(response,"maxAttribute:samlAuthenticationStatementAuthMethod")
                 agencyThatRequired = parse_tag(response,"maxAttribute:EAuth-LOA")
-		return TICKET_OK, id, pivcard, agencyThatRequired
+		return TICKET_OK, id_, pivcard, agencyThatRequired
 
 def validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt):
 
@@ -351,9 +349,9 @@ def validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt):
  #       writelog("response = "+response)
  	r = requests.get(cas_validate,proxies=cas_proxy)
  	response = r.text
-	id = parse_tag(response,"cas:user")
+	id_ = parse_tag(response,"cas:user")
 	#  Ticket does not validate, return error
-	if id=="":
+	if id_ == "":
 		return TICKET_INVALID, "", "", ""
 	#  Ticket validates
 	else:
@@ -363,7 +361,7 @@ def validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt):
                 eauth_but_not_valid = parse_tag(response,"maxAttribute:EAuth-LOA")
 #                writelog("pivcard = "+pivcard)
 #                writelog("agencyThatRequired = "+agencyThatRequired)
-		return TICKET_OK, id, pivcard, eauth_but_not_valid
+		return TICKET_OK, id_, pivcard, eauth_but_not_valid
 
 
 #  Read cookies from env variable HTTP_COOKIE.
@@ -399,23 +397,23 @@ def get_ticket_status(cas_host,service_url,protocol,opt):
 
 def get_ticket_status_from_ticket(ticket,cas_host,service_url,protocol,opt):
         if protocol==1:
-                ticket_status, id = validate_cas_1(cas_host, service_url, ticket, opt)
+                ticket_status, id_=validate_cas_1(cas_host, service_url, ticket, opt)
         else:
-                ticket_status, id = validate_cas_2(cas_host, service_url, ticket, opt)
+                ticket_status, id_=validate_cas_2(cas_host, service_url, ticket, opt)
 
 #        writelog("ticket status"+repr(ticket_status))
         #  Make cookie and return id
         if ticket_status==TICKET_OK:
-                return TICKET_OK, id
+                return TICKET_OK, id_
         #  Return error status
         else:
                 return ticket_status, ""
 
 def get_ticket_status_from_ticket_piv_required(assurancelevel_p,ticket,cas_host,cas_proxy,service_url,protocol,opt):
         if protocol==1:
-                ticket_status, id = validate_cas_1(cas_host, service_url, ticket, opt)
+                ticket_status, id_ = validate_cas_1(cas_host, service_url, ticket, opt)
         else:
-                ticket_status, id,piv,eauth = validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt)
+                ticket_status, id_, piv, eauth=validate_cas_2x(cas_host, cas_proxy, service_url, ticket, opt)
 
 #        writelog("ticket status"+repr(ticket_status))
 #        writelog("piv status"+repr(piv))
@@ -429,7 +427,7 @@ def get_ticket_status_from_ticket_piv_required(assurancelevel_p,ticket,cas_host,
         # This is supposed to be a simple boolean!  But...
         # it is returning a set containing a boolean!  I know not why.
         if ticket_status==TICKET_OK and (True in assurancelevel_p(eauth,piv)):
-                return TICKET_OK, id
+                return TICKET_OK, id_
         #  Return error status
         else:
                 if ticket_status==TICKET_OK:
@@ -463,13 +461,13 @@ def check_authenticated_p(assurance_level_p,ticket,cas_host,cas_proxy,cas_secret
 	#  Other cookie status are 
 	#     COOKIE_NONE    - no cookie found.
 	#     COOKIE_INVALID - invalid cookie found.
-	cookie_status, id = get_cookie_status(cas_secret)
+	cookie_status, id_ = get_cookie_status(cas_secret)
 
  #       writelog("got cookie status")
 
 	if cookie_status==COOKIE_AUTH:
                 writelog("CAS_OK")
-		return CAS_OK, id, ""
+		return CAS_OK, id_, ""
 
 	if cookie_status==COOKIE_INVALID:
 		return CAS_COOKIE_INVALID, "", ""
@@ -483,14 +481,14 @@ def check_authenticated_p(assurance_level_p,ticket,cas_host,cas_proxy,cas_secret
 
 #        writelog("getting cookie status")
 
-	ticket_status, id = get_ticket_status_from_ticket_piv_required(assurance_level_p,ticket,cas_host,cas_proxy,service_url,protocol,opt)
+	ticket_status, id_ = get_ticket_status_from_ticket_piv_required(assurance_level_p,ticket,cas_host,cas_proxy,service_url,protocol,opt)
 
 	if ticket_status==TICKET_OK:
 		timestr     = str(int(time.time()))
-		hash        = makehash(timestr + ":" + id,cas_secret)
-		cookie_val  = hash + timestr + ":" + id
+		hash_        = makehash(timestr + ":" + id_, cas_secret)
+		cookie_val  = hash_ + timestr + ":" + id_
 		domain      = urlparse.urlparse(service_url)[1]
-		return CAS_OK, id, make_pycas_cookie(cookie_val, domain, path, secure)
+		return CAS_OK, id_, make_pycas_cookie(cookie_val, domain, path, secure)
 
 	elif ticket_status==TICKET_INVALID:
 		return CAS_TICKET_INVALID, "", ""
