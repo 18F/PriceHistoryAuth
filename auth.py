@@ -10,7 +10,7 @@ import LogActivity
 
 import pickle
 import hashlib
-from PricesPaidGUI.ppGuiConfig import RelativePathToHashesFile,TokenTimeout
+from PriceHistoryGUI.ppGuiConfig import RelativePathToHashesFile,TokenTimeout
 
 hashes = {}
 
