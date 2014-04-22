@@ -6,19 +6,20 @@ Simple Authentication module used by PricesPaidGUI and PricesPaidAPI.  This proj
 It is, however, a derived [CAS](https://wiki.jasig.org/display/CAS/Home) (Central Authentication Service) client.  As such, it might be interesting to anyone who wants a Python CAS client.
 It is basecd on the file [pycas.py](https://wiki.jasig.org/display/CASC/Pycas) by Jon Rifkin that may be valuable to someone doing CAS authentication that is NOT using CGI as the original file did.
 
-This is part of the PricesPaid (P3) Project
+This is part of the PriceHistory (P3) Project
 --------------------------------------
 
-The PricesPaid (P3) project is market research tool to allow search of purchase transactions.  It is modularized into 4 github repositories:
+The PriceHistory (P3) project is market research tool to allow search of purchase transactions.  It is modularized into 5 github repositories:
 
-1. [PricesPaidGUI](https://github.com/XGov/PricesPaidGUI), 
-2. [PricesPaidAPI](https://github.com/presidential-innovation-fellows/PricesPaidAPI), 
-3. [MorrisDataDecorator](https://github.com/presidential-innovation-fellows/MorrisDataDecorator), 
-4. [P3Auth](https://github.com/XGov/P3Auth).  
+1. [PriceHistoryInstall](https://github.com/18F/PriceHistoryGUI),
+2. [PriceHistoryGUI](https://github.com/18F/PriceHistoryGUI), 
+3. [PriceHistoryAPI](https://github.com/18F/PriceHistoryAPI), 
+4. [MorrisDataDecorator](https://github.com/18F/MorrisDataDecorator), 
+5. [PriceHistoryAuth](https://github.com/18F/PriceHistoryAuth).  
 
-To learn how to install the system, please refer to the documentation in the PricesPaidGUI project.
+To learn how to install the system, please refer PriceHistoryInstall project, which contains a Vagrant install script.  That repo is actively under development in preparation of the Houston Hackathon.
 
-The name "PricesPaid" is descriptive: this project shows you prices that have been paid for things.  However, the name is applied to many projects, so "P3" is the specific name of this project.
+The name "PriceHistory" is descriptive: this project shows you prices that have been paid for things.  However, the name is applied to many projects, so "P3" is the specific name of this project.
 
 # Licensing: derived work of Pycas.py
 
